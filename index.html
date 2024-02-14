@@ -3,40 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR code GENERATOR</title>
+    <title>QR code GENERATOR with Chatbot</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
     <p>Enter your text or URL</p>
     <input type="text" placeholder="Text or URL" id="qrText">
-
+    
     <div id="imgBox">
-        <img src="" id="qrImage">
+        <!-- Include 'alt' attribute to improve accessibility -->
+        <img src="" id="qrImage" alt="QR code">
     </div>
-
+    
     <button onclick="generateQr()">Generate QR code</button>
+
+    <div id="chat">
+        <div id="chat-container">
+            <div id="chat-output"></div>
+            <input type="text" id="chat-input" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
 </div>    
     
 <script>
+    let imgBox = document.getElementById("imgBox");
+    let qrImage = document.getElementById("qrImage");
+    let qrText = document.getElementById("qrText");
+    let chatOutput = document.getElementById("chat-output");
+    let chatInput = document.getElementById("chat-input");
 
-let imgBox = document.getElementById("imgBox");
-let qrImage = document.getElementById("qrImage");
-let qrText = document.getElementById("qrText");
-
-function generateQr(){
-    if(qrText.value.length > 0){
-    qrImage.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + qrText.value;
-    imgBox.classList.add("show-img");
-    }else{
-        qrText.classList.add('error');
-        setTimeout(()=>{
-            qrText.classList.remove('error');
-        },1000);
+    function generateQr(){
+        if(qrText.value.length > 0){
+            qrImage.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + qrText.value;
+            imgBox.classList.add("show-img");
+        } else {
+            qrText.classList.add('error');
+            setTimeout(()=>{
+                qrText.classList.remove('error');
+            },1000);
+        }
     }
 
-}
+    function sendMessage() {
+        let message = chatInput.value.trim();
+        if (message !== '') {
+            appendMessage('You', message);
+            // Send the message to the chatbot for processing
+            chatbotResponse(message);
+            chatInput.value = '';
+        }
+    }
 
+    function appendMessage(sender, message) {
+        let messageElement = document.createElement('div');
+        messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+        chatOutput.appendChild(messageElement);
+    }
+
+    function chatbotResponse(message) {
+        // Simple logic to generate chatbot response
+        let response;
+        if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+            response = "Hello! How can I assist you?";
+        } else if (message.toLowerCase().includes('how are you')) {
+            response = "I'm just a bot, but I'm doing well! How about you?";
+        } else if (message.toLowerCase().includes('thank you') || message.toLowerCase().includes('thanks')) {
+            response = "You're welcome!";
+        } else {
+            response = "I'm sorry, I didn't understand that. Can you please rephrase?";
+        }
+        // Simulate a slight delay before displaying the response
+        setTimeout(() => {
+            appendMessage('Chatbot', response);
+        }, 500);
+    }
 </script>
 
 </body>
