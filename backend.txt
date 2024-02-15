@@ -1,0 +1,35 @@
+const express = require('express');
+const qr = require('qr-image');
+
+const app = express();
+const port = 3000;
+
+// Serve static files from the "public" directory
+app.use(express.static('public'));
+
+// Generate QR code based on input
+app.get('/generateQR/:data', (req, res) => {
+    const qrData = req.params.data;
+    const qr_png = qr.imageSync(qrData, { type: 'png' });
+    res.type('png').send(qr_png);
+});
+
+// Chatbot endpoint
+app.get('/chatbot/:message', (req, res) => {
+    const message = req.params.message.toLowerCase();
+    let response;
+    if (message.includes('hello') || message.includes('hi')) {
+        response = "Hello! How can I assist you?";
+    } else if (message.includes('how are you')) {
+        response = "I'm just a bot, but I'm doing well! How about you?";
+    } else if (message.includes('thank you') || message.includes('thanks')) {
+        response = "You're welcome!";
+    } else {
+        response = "I'm sorry, I didn't understand that. Can you please rephrase?";
+    }
+    res.send(response);
+});
+
+app.listen(port, () => {
+    console.log(`Backend server listening at http://localhost:${port}`);
+})

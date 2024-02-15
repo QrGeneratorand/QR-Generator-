@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR code GENERATOR with Chatbot</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Include QuaggaJS library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -17,6 +19,12 @@
     </div>
     
     <button onclick="generateQr()">Generate QR code</button>
+    
+    <!-- Add Scan QR Code button -->
+    <button id="scanBtn">Scan QR code</button>
+
+    <!-- Video element to display camera feed -->
+    <video id="cameraFeed" width="300" height="200" style="display: none;" autoplay></video>
 
     <div id="chat">
         <div id="chat-container">
@@ -28,12 +36,16 @@
 </div>    
     
 <script>
-    let imgBox = document.getElementById("imgBox");
-    let qrImage = document.getElementById("qrImage");
-    let qrText = document.getElementById("qrText");
-    let chatOutput = document.getElementById("chat-output");
-    let chatInput = document.getElementById("chat-input");
+    // Global variables
+    const imgBox = document.getElementById("imgBox");
+    const qrImage = document.getElementById("qrImage");
+    const qrText = document.getElementById("qrText");
+    const chatOutput = document.getElementById("chat-output");
+    const chatInput = document.getElementById("chat-input");
+    const scanBtn = document.getElementById("scanBtn");
+    const cameraFeed = document.getElementById("cameraFeed");
 
+    // Function to generate QR code
     function generateQr(){
         if(qrText.value.length > 0){
             qrImage.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + qrText.value;
@@ -46,8 +58,9 @@
         }
     }
 
+    // Function to send message
     function sendMessage() {
-        let message = chatInput.value.trim();
+        const message = chatInput.value.trim();
         if (message !== '') {
             appendMessage('You', message);
             // Send the message to the chatbot for processing
@@ -56,12 +69,14 @@
         }
     }
 
+    // Function to append message to chat output
     function appendMessage(sender, message) {
-        let messageElement = document.createElement('div');
+        const messageElement = document.createElement('div');
         messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
         chatOutput.appendChild(messageElement);
     }
 
+    // Function to handle chatbot response
     function chatbotResponse(message) {
         // Simple logic to generate chatbot response
         let response;
@@ -79,7 +94,44 @@
             appendMessage('Chatbot', response);
         }, 500);
     }
+
+    // Function to scan QR code
+    function scanQrCode() {
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: cameraFeed // Use the video element to display the camera feed
+            },
+            decoder: {
+                readers: ["qrcode_reader"] // Use only the QR code reader
+            }
+        }, function(err) {
+            if (err) {
+                console.error("Failed to initialize Quagga: ", err);
+                alert("Failed to initialize QR scanner. Please try again.");
+                return;
+            }
+            cameraFeed.style.display = "block"; // Show the video element
+            Quagga.start(); // Start the scanner
+            scanBtn.disabled = true; // Disable the scan button while scanning
+        });
+
+        Quagga.onDetected(function(result) {
+            const code = result.codeResult.code; // Extract the QR code content
+            alert("Scanned QR code: " + code);   // Display the scanned QR code content in an alert
+            Quagga.stop(); // Stop the scanner after successful detection
+            cameraFeed.style.display = "none"; // Hide the video element
+            scanBtn.disabled = false; // Enable the scan button after scanning is done
+        });
+    }
+
+    // Add event listener to Scan QR Code button
+    scanBtn.addEventListener("click", scanQrCode);
+
 </script>
 
 </body>
 </html>
+
+
